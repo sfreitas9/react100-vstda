@@ -1,27 +1,15 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import TodoItem from './TodoItem';
 import EditTodo from './EditTodo';
 
 class TodoList extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
-    const todos = [
-      {
-        task: 'Buy milk',
-        priority: 'low',
-        completed: false
-      },
-      {
-        task: 'Always be coding',
-        priority: 'high',
-        completed: true
-      },
-      {
-        task: 'Feed the cats',
-        priority: 'medium',
-        completed: false
-      },
-    ];
-    let listItems = todos.map((item, i) => {
+    let listItems = this.props.todoList.map((item, i) => {
       return (
         <TodoItem
           i={ i }
@@ -38,7 +26,7 @@ class TodoList extends Component {
     return (
       <div className='panel'>
         <div className='panel-heading'>
-        View Todos
+        View todos
         </div>
         <EditTodo />
         <div className='panel-body no-padding'>
@@ -50,4 +38,10 @@ class TodoList extends Component {
     );
   }
 }
+
+TodoList.propTypes = {
+  todoList: PropTypes.array
+};
+
+
 export default TodoList;
