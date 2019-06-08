@@ -1,52 +1,77 @@
 import React, { Component } from 'react';
-import { stringify } from 'querystring';
 import TodoList from './TodoList';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      todoList: [
-        {
-          task: 'Buy milk',
-          priority: '2',
-          completed: false
-        },
-        {
-          task: 'Always be coding',
-          priority: '3',
-          completed: true
-        },
-        {
-          task: 'Feed the cats',
-          priority: '1',
-          completed: false
-        },
-      ],
+      todoList: [],
+      nextId: 1,
       currText: '',
-      currPriority: '0'
+      currPriority: '0',
+      editingItem: null
     };
     this.handleAdd = this.handleAdd.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    console.log('done in constructor');
+    this.setEdit = this.setEdit.bind(this);
+    this.onEdit = this.onEdit.bind(this);
+    this.onDelete = this.onDelete.bind(this);
+  }
+
+  onDelete(item) {
+    this.setState({
+      todoList: this.state.todoList.filter(curr => curr.id !== item)
+    });
+  }
+
+  onEdit(item, newTask, newPriority) {
+    if (!this.validTask(newTask, newPriority)) return;
+    const objIndex = this.state.todoList.findIndex(obj => obj.id === item.id);
+    item.task = newTask;
+    item.priority = newPriority;
+
+    const updatedList = [
+      ...this.state.todoList.slice(0, objIndex),
+      item,
+      ...this.state.todoList.slice(objIndex + 1),
+    ];
+    this.setState({
+      todoList: updatedList,
+      editingItem: null
+    });
+  }
+
+  setEdit(item) {
+    this.setState({
+      editingItem: item.id
+    });
+  }
+
+  validTask(task, priority) {
+    if (task === '' || priority === '0') {
+      alert(`Please enter a task and a priority`);
+      return false;
+    }
+    return true;
   }
 
   handleAdd() {
+    if (!this.validTask(this.state.currText, this.state.currPriority)) return;
     const newItem = {
+      id: this.state.nextId,
       task: this.state.currText,
       priority: this.state.currPriority,
       completed: false,
-      editEnabled: false
     };
     this.setState({
       todoList: [...this.state.todoList, newItem],
+      nextId: this.state.nextId + 1,
       currText: '',
       currPriority: '0'
     });
   }
 
   handleChange(event) {
-    console.log('in handle change');
     switch (event.target.name) {
       case 'create-todo-text':
         this.setState({
@@ -64,8 +89,6 @@ class App extends Component {
   }
 
   render() {
-    console.log('in render');
-
     return (
       <div className='container'>
         <h1 className='white'>Very Simple Todo App</h1>
@@ -79,24 +102,30 @@ class App extends Component {
               </div>
               <div className='panel-body'>
                 <label htmlFor='create-todo-text'><p><strong>I want to...</strong></p></label>
-                <textarea name='create-todo-text' onChange={ this.handleChange } value={ this.state.currText } />
+                <textarea className='create-todo-text' name='create-todo-text' onChange={ this.handleChange } value={ this.state.currText } />
                 <label htmlFor='create-todo-priority'><p><strong>How much of a priority is this?</strong></p></label>
                 <div>
-                  <select name='create-todo-priority' value={ this.state.currPriority } required onChange={ this.handleChange }>
+                  <select className='create-todo-priority' name='create-todo-priority' value={ this.state.currPriority } required onChange={ this.handleChange }>
                     <option value='0' disabled>Select a priority</option>
-                    <option value='1'>High</option>
+                    <option value='3'>High</option>
                     <option value='2'>Medium</option>
-                    <option value='3'>Low</option>
+                    <option value='1'>Low</option>
                   </select>
                 </div>
               </div>
               <div className='panel-footer'>
-                <button name='add' onClick={ this.handleAdd } className='btn btn-success btn-block'>Add</button>
+                <button name='add' onClick={ this.handleAdd } className='btn btn-success btn-block create-todo'>Add</button>
               </div>
             </div>
           </div>
           <div className='col-md-8'>
-            <TodoList todoList={ this.state.todoList } />
+            <TodoList
+              todoList={ this.state.todoList }
+              editingItem={ this.state.editingItem }
+              setEdit={ this.setEdit }
+              onEdit={ this.onEdit }
+              onDelete={ this.onDelete }
+            />
           </div>
         </div>
       </div>
